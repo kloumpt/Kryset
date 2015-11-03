@@ -1,7 +1,7 @@
 # TODO
 ## Data
-- [ ] Define the User type
-- [ ] Define the Avatar type
+- [ ] Define the User type (Started)
+- [ ] Define the Avatar type (Started)
 - [ ] Define the World type
 
 ## Logic
@@ -13,4 +13,4 @@
 - [ ] Display the users avatar in the world
 
 ## Util
-- [ ] Manage text input
+- [x] Manage text input
