@@ -11,3 +11,6 @@
 ## Rendering
 - [ ] Display the world as ascii chars
 - [ ] Display the users avatar in the world
+
+## Util
+- [ ] Manage text input
