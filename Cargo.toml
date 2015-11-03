@@ -1,4 +1,7 @@
 [package]
 name = "Kryset"
 version = "0.1.0"
-authors = ["kloumpt <ubunthero@gmail.com>"]
+authors = ["kloumpt <serge.molina+rust@kloumpt.net>"]
+
+[dependencies]
+rustbox = "*"
