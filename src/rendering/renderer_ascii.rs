@@ -11,7 +11,7 @@ pub fn render_world(rustbox: &RustBox, x_begin: usize, y_begin: usize, x_end: us
 	for n in (0..world_object_amount) {
 		let test = world.get_object(n);
 		match world.get_object(n){
-			Some(an_element) => rustbox.print_char(x_begin+an_element.borrow().get_x() as usize, y_begin+an_element.borrow().get_y() as usize, rustbox::RB_BOLD, Color::White, Color::Black, an_element.borrow().get_representation()),
+			Some(an_element) => rustbox.print_char(x_begin+an_element.borrow().get_x() as usize, y_begin+an_element.borrow().get_y() as usize, rustbox::RB_BOLD, an_element.borrow().get_color(), Color::Black, an_element.borrow().get_representation()),
 			None => ()
 		}
 	}

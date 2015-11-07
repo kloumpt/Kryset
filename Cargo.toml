@@ -6,3 +6,4 @@ authors = ["kloumpt <serge.molina+rust@kloumpt.net>"]
 [dependencies]
 rustbox = "*"
 time = "*"
+rand = "0.3"

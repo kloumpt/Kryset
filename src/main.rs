@@ -1,5 +1,6 @@
 extern crate rustbox;
 extern crate time;
+extern crate rand;
 
 mod data;
 mod rendering;
@@ -19,6 +20,9 @@ use time::Duration;
 use data::user::User;
 use data::avatar::Avatar;
 use data::world::World;
+use data::world::Tree;
+
+use rand::Rng;
 
 use util::io;
 
@@ -28,7 +32,7 @@ fn game_loop(rustbox: &RustBox, test_user: &mut User, test_world: &World){
 		rendering::renderer_ascii::clear(&rustbox);
 		rustbox.print(0, 0, rustbox::RB_BOLD, Color::White, Color::Black, test_user.get_name());
 		rendering::renderer_ascii::render_world(&rustbox, 0, 1, rustbox.width(), rustbox.height(), &test_world);
-		let pressed_key = match rustbox.peek_event(Duration::milliseconds(1), false) {
+		let pressed_key = match rustbox.peek_event(Duration::milliseconds(100), false) {
 			Ok(rustbox::Event::KeyEvent(key)) => {
 				match key {
 					Some(Key::Char('q')) => { break; },
@@ -43,12 +47,13 @@ fn game_loop(rustbox: &RustBox, test_user: &mut User, test_world: &World){
 
 		match test_user.get_avatar() {
 			Some(avatar) => {
+				//avatar.borrow_mut().set_representation('X');
 				match pressed_key{
-					Some(Key::Up) => avatar.borrow_mut().move_up(),
-					Some(Key::Down) => avatar.borrow_mut().move_down(),
-					Some(Key::Left) => avatar.borrow_mut().move_left(),
-					Some(Key::Right) => avatar.borrow_mut().move_right(),
-					Some(_) => println!("{}", avatar.borrow().get_x()),
+					Some(Key::Up) => {avatar.borrow_mut().set_representation('^'); avatar.borrow_mut().move_up()},
+					Some(Key::Down) => {avatar.borrow_mut().set_representation('v'); avatar.borrow_mut().move_down()},
+					Some(Key::Left) => {avatar.borrow_mut().set_representation('<'); avatar.borrow_mut().move_left()},
+					Some(Key::Right) => {avatar.borrow_mut().set_representation('>'); avatar.borrow_mut().move_right()},
+					Some(_) => (),
 					None =>()
 				}
 			},
@@ -79,6 +84,16 @@ fn main() {
 	match user.get_avatar(){
 		Some(avatar) =>	world.add_object(avatar),
 		None => ()
+	}
+
+	let mut rng = rand::thread_rng();
+
+	for _ in (0..rustbox.width()){
+		let x=(rng.gen::<u32>()%(rustbox.width() as u32)) as i32;
+		let y=(rng.gen::<u32>()%(rustbox.height() as u32)) as i32;
+		for _ in (0..10) {
+			world.add_object(Rc::new(RefCell::new(Tree::new(x+(rng.gen::<u32>()%6 as u32) as i32, y+(rng.gen::<u32>()%6 as u32) as i32, 0)) ));
+		}
 	}
 
 	game_loop(&rustbox, &mut user, &world);

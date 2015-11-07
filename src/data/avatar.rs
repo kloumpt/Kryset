@@ -1,9 +1,12 @@
 use data::world::Element;
+use std::cell::RefCell;
+use rustbox::Color;
+
 pub struct Avatar{
-	pub x: i32,
-	pub y: i32,
-	pub z: i32,
-	pub representation: char
+	x: i32,
+	y: i32,
+	z: i32,
+	representation: char
 }
 
 impl Avatar{
@@ -26,8 +29,6 @@ impl Avatar{
 	pub fn move_right(&mut self){
 		self.x+=1;
 	}
-
-
 	pub fn get_x(&self) -> i32{
 		self.x
 	}
@@ -42,7 +43,31 @@ impl Avatar{
 		self.representation
 	}
 
-	pub fn set_representation(mut self, representation: char){
+	pub fn set_representation(&mut self, representation: char){
 		self.representation=representation
+	}
+	fn get_color(&self) -> Color{
+		Color::Red
+	}
+}
+
+
+impl Element for Avatar{
+	fn get_x(&self) -> i32{
+		self.get_x()
+	}
+	fn get_y(&self) -> i32{
+		self.get_y()
+	}
+
+	fn get_z(&self) -> i32{
+		self.get_z()
+	}
+	fn get_representation(&self) -> char{
+		self.get_representation()
+	}
+
+	fn get_color(&self) -> Color{
+		self.get_color()
 	}
 }
