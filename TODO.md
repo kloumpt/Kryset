@@ -16,4 +16,5 @@
 - [x] Manage text input
 
 ## Refactoring
-- [ ] User references to avatar instead of avatar index in the world
+- [x] Change User references avatar instead of avatar index in the world (fixed by using RC<RefCell<Avatar>> thanks to [desiringmachines](https://www.reddit.com/r/rust/comments/3rqrde/sharing_data_in_multiple_objects/cwrqf77))
+- [ ] Change World from referencing Avatars to referencing Elements

@@ -1,9 +1,9 @@
 use data::world::Element;
 pub struct Avatar{
-	x: i32,
-	y: i32,
-	z: i32,
-	representation: char
+	pub x: i32,
+	pub y: i32,
+	pub z: i32,
+	pub representation: char
 }
 
 impl Avatar{
@@ -28,21 +28,21 @@ impl Avatar{
 	}
 
 
-		pub fn get_x(&self) -> i32{
-			self.x
-		}
-		pub fn get_y(&self) -> i32{
-			self.y
-		}
+	pub fn get_x(&self) -> i32{
+		self.x
+	}
+	pub fn get_y(&self) -> i32{
+		self.y
+	}
 
-		pub fn get_z(&self) -> i32{
-			self.z
-		}
-		pub fn get_representation(&self) -> char{
-			self.representation
-		}
+	pub fn get_z(&self) -> i32{
+		self.z
+	}
+	pub fn get_representation(&self) -> char{
+		self.representation
+	}
 
-		pub fn set_representation(&mut self, representation: char){
-			self.representation=representation
-		}
+	pub fn set_representation(mut self, representation: char){
+		self.representation=representation
+	}
 }
