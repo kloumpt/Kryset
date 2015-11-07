@@ -4,6 +4,7 @@ Kryset is a small game that I'm writing to learn rust programming
 
 ## Build instruction
 It should work with rust 1.4
-`git clone https://github.com/kloumpt/Kryset.git`
-`cd Kryset`
-`cargo run`
+
+    git clone https://github.com/kloumpt/Kryset.git
+    cd Kryset
+    cargo run
