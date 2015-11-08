@@ -1,19 +1,20 @@
 use data::world::Element;
-use std::cell::RefCell;
 use rustbox::Color;
+use rendering::renderer_ascii::Representation;
 
 pub struct Avatar{
 	x: i32,
 	y: i32,
 	z: i32,
-	representation: char
+	representation: Representation
 }
 
 impl Avatar{
 	pub fn new() -> Avatar{
-		Avatar{x: 0, y: 0, z: 0, representation: ' '}
+		Avatar{x: 0, y: 0, z: 0, representation: Representation::new('X')}
 	}
-	pub fn new_with_representation(representation: char) -> Avatar{
+
+	pub fn new_with_representation(representation: Representation) -> Avatar{
 		Avatar{x: 0, y: 0, z: 0, representation: representation}
 	}
 
@@ -39,11 +40,11 @@ impl Avatar{
 	pub fn get_z(&self) -> i32{
 		self.z
 	}
-	pub fn get_representation(&self) -> char{
-		self.representation
+	pub fn get_representation(&self) -> &Representation{
+		&self.representation
 	}
 
-	pub fn set_representation(&mut self, representation: char){
+	pub fn set_representation(&mut self, representation: Representation){
 		self.representation=representation
 	}
 	fn get_color(&self) -> Color{
@@ -63,7 +64,7 @@ impl Element for Avatar{
 	fn get_z(&self) -> i32{
 		self.get_z()
 	}
-	fn get_representation(&self) -> char{
+	fn get_representation(&self) -> &Representation{
 		self.get_representation()
 	}
 

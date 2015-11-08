@@ -4,6 +4,8 @@
 - [ ] Define the Avatar type (Started)
 - [ ] Define the World type (Started)
 - [ ] Add some test elements (Started)
+- [ ] Add Element saving functions
+- [ ] Add Element loading functions
 
 ## Logic
 - [ ] Listen to key inputs (Started)
@@ -13,8 +15,10 @@
 ## Rendering
 - [x] Display the world elemnts as ascii chars
 - [x] Display the users avatar in the world
-- [ ] Store representation in a spécific type
-- [ ] Allow the display of composed representation
+- [X] Store representation in a spécific type
+- [X] Allow the display of composed representation
+- [ ] Add Representations saving functions
+- [ ] Add Representations loading functions
 
 ## Util
 - [x] Manage text input
@@ -23,3 +27,7 @@
 ## Refactoring
 - [x] Change User references avatar instead of avatar index in the world (fixed by using RC<RefCell<Avatar>> thanks to [desiringmachines](https://www.reddit.com/r/rust/comments/3rqrde/sharing_data_in_multiple_objects/cwrqf77))
 - [x] Change World from referencing Avatars to referencing Elements
+
+## Networking
+- [ ] Add basic game hosting
+- [ ] Add basic game joining

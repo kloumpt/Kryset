@@ -22,6 +22,8 @@ use data::avatar::Avatar;
 use data::world::World;
 use data::world::Tree;
 
+use rendering::renderer_ascii::Representation;
+
 use rand::Rng;
 
 use util::io;
@@ -49,10 +51,10 @@ fn game_loop(rustbox: &RustBox, test_user: &mut User, test_world: &World){
 			Some(avatar) => {
 				//avatar.borrow_mut().set_representation('X');
 				match pressed_key{
-					Some(Key::Up) => {avatar.borrow_mut().set_representation('^'); avatar.borrow_mut().move_up()},
-					Some(Key::Down) => {avatar.borrow_mut().set_representation('v'); avatar.borrow_mut().move_down()},
-					Some(Key::Left) => {avatar.borrow_mut().set_representation('<'); avatar.borrow_mut().move_left()},
-					Some(Key::Right) => {avatar.borrow_mut().set_representation('>'); avatar.borrow_mut().move_right()},
+					Some(Key::Up) => {avatar.borrow_mut().set_representation(Representation::new('^')); avatar.borrow_mut().move_up()},
+					Some(Key::Down) => {avatar.borrow_mut().set_representation(Representation::new('v')); avatar.borrow_mut().move_down()},
+					Some(Key::Left) => {avatar.borrow_mut().set_representation(Representation::new('<')); avatar.borrow_mut().move_left()},
+					Some(Key::Right) => {avatar.borrow_mut().set_representation(Representation::new('>')); avatar.borrow_mut().move_right()},
 					Some(_) => (),
 					None =>()
 				}
@@ -80,7 +82,7 @@ fn main() {
 
 	let mut user = User::new(&name);
 
-	user.set_avatar(Rc::new(RefCell::new(Avatar::new_with_representation('X'))));
+	user.set_avatar(Rc::new(RefCell::new(Avatar::new_with_representation(Representation::new('X')))));
 	match user.get_avatar(){
 		Some(avatar) =>	world.add_object(avatar),
 		None => ()
@@ -88,10 +90,10 @@ fn main() {
 
 	let mut rng = rand::thread_rng();
 
-	for _ in (0..rustbox.width()){
+	for _ in (0..rustbox.width()*2){
 		let x=(rng.gen::<u32>()%(rustbox.width() as u32)) as i32;
 		let y=(rng.gen::<u32>()%(rustbox.height() as u32)) as i32;
-		for _ in (0..10) {
+		for _ in (0..1) {
 			world.add_object(Rc::new(RefCell::new(Tree::new(x+(rng.gen::<u32>()%6 as u32) as i32, y+(rng.gen::<u32>()%6 as u32) as i32, 0)) ));
 		}
 	}

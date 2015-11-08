@@ -2,11 +2,13 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use rustbox::Color;
 
+use rendering::renderer_ascii::Representation;
+
 pub trait Element {
 	fn get_x(&self) -> i32;
 	fn get_y(&self) -> i32;
 	fn get_z(&self) -> i32;
-	fn get_representation(&self) -> char;
+	fn get_representation(&self) -> &Representation;
 	fn get_color(&self) -> Color;
 }
 
@@ -18,12 +20,13 @@ pub struct Tree {
 	x: i32,
 	y: i32,
 	z: i32,
-	representation: char
+	representation: Representation
 }
 
 impl Tree {
 	pub fn new(x: i32, y: i32, z: i32) -> Tree{
-		Tree{x: x, y: y, z: z, representation: 'T'}
+		//Tree{x: x, y: y, z: z, representation: Representation::new('T')}
+		Tree{x: x, y: y, z: z, representation: Representation::new_composed(vec![(2, 0, ','), (1, 1, '/'), (2, 1, 'X'), (3, 1, '\\'), (0, 2, '/'), (1, 2, 'X'), (2, 2, 'X'), (3, 2, 'X'), (4, 2, '\\'),(2, 3, 'I')])}
 	}
 
 	pub fn get_x(&self) -> i32{
@@ -36,8 +39,8 @@ impl Tree {
 	pub fn get_z(&self) -> i32{
 		self.z
 	}
-	pub fn get_representation(&self) -> char{
-		self.representation
+	pub fn get_representation(&self) -> &Representation{
+		&self.representation
 	}
 
 	fn get_color(&self) -> Color{
@@ -56,7 +59,7 @@ impl Element for Tree{
 	fn get_z(&self) -> i32{
 		self.get_z()
 	}
-	fn get_representation(&self) -> char{
+	fn get_representation(&self) -> &Representation{
 		self.get_representation()
 	}
 
