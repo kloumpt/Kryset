@@ -29,5 +29,5 @@
 - [x] Change World from referencing Avatars to referencing Elements
 
 ## Networking
-- [ ] Add basic game hosting
-- [ ] Add basic game joining
+- [ ] Add basic game hosting (Started)
+- [ ] Add basic game joining (Started)

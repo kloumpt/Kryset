@@ -8,6 +8,11 @@ pub trait Element {
 	fn get_x(&self) -> i32;
 	fn get_y(&self) -> i32;
 	fn get_z(&self) -> i32;
+
+	fn set_x(&mut self, x: i32);
+	fn set_y(&mut self, x: i32);
+	fn set_z(&mut self, x: i32);
+
 	fn get_representation(&self) -> &Representation;
 	fn get_color(&self) -> Color;
 }
@@ -39,6 +44,22 @@ impl Tree {
 	pub fn get_z(&self) -> i32{
 		self.z
 	}
+
+
+	pub fn set_x(&mut self, x: i32){
+		self.x = x;
+	}
+
+	pub fn set_y(&mut self, y: i32){
+		self.y = y;
+
+	}
+
+	pub fn set_z(&mut self, z: i32){
+		self.z = z;
+
+	}
+
 	pub fn get_representation(&self) -> &Representation{
 		&self.representation
 	}
@@ -59,6 +80,20 @@ impl Element for Tree{
 	fn get_z(&self) -> i32{
 		self.get_z()
 	}
+
+
+	fn set_x(&mut self, x: i32){
+		self.set_x(x);
+	}
+
+	fn set_y(&mut self, y: i32){
+		self.set_y(y);
+	}
+
+	fn set_z(&mut self, z: i32){
+		self.set_z(z);
+	}
+
 	fn get_representation(&self) -> &Representation{
 		self.get_representation()
 	}

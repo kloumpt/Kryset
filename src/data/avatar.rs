@@ -10,7 +10,7 @@ pub struct Avatar{
 }
 
 impl Avatar{
-	pub fn new() -> Avatar{
+	pub fn _new() -> Avatar{
 		Avatar{x: 0, y: 0, z: 0, representation: Representation::new('X')}
 	}
 
@@ -40,6 +40,22 @@ impl Avatar{
 	pub fn get_z(&self) -> i32{
 		self.z
 	}
+
+
+	pub fn set_x(&mut self, x: i32){
+		self.x = x;
+	}
+
+	pub fn set_y(&mut self, y: i32){
+		self.y = y;
+
+	}
+
+	pub fn set_z(&mut self, z: i32){
+		self.z = z;
+
+	}
+
 	pub fn get_representation(&self) -> &Representation{
 		&self.representation
 	}
@@ -64,6 +80,20 @@ impl Element for Avatar{
 	fn get_z(&self) -> i32{
 		self.get_z()
 	}
+
+
+	fn set_x(&mut self, x: i32){
+		self.set_x(x);
+	}
+
+	fn set_y(&mut self, y: i32){
+		self.set_y(y);
+	}
+
+	fn set_z(&mut self, z: i32){
+		self.set_z(z);
+	}
+
 	fn get_representation(&self) -> &Representation{
 		self.get_representation()
 	}

@@ -1,6 +1,7 @@
 extern crate rustbox;
 extern crate time;
 extern crate rand;
+extern crate byteorder;
 
 mod data;
 mod rendering;
@@ -17,6 +18,8 @@ use rustbox::Key;
 
 use time::Duration;
 
+use rand::Rng;
+
 use data::user::User;
 use data::avatar::Avatar;
 use data::world::World;
@@ -24,48 +27,164 @@ use data::world::Tree;
 
 use rendering::renderer_ascii::Representation;
 
-use rand::Rng;
 
 use util::io;
 
-fn game_loop(rustbox: &RustBox, test_user: &mut User, test_world: &World){
+use std::net::SocketAddr;
+use std::net::SocketAddrV4;
+use std::net::Ipv4Addr;
+use std::net::UdpSocket;
+
+use byteorder::ByteOrder;
+use byteorder::BigEndian;
+
+use std::env;
+
+fn recieve_pos(socket: &UdpSocket) -> (i32, i32){
+
+
+	let mut buf = [0; 8];
+
+	let (_amt, _src) = match socket.recv_from(&mut buf) {
+		Ok(v) => v,
+		Err(e) => panic!("error : {}", e)
+	};
+	let x=BigEndian::read_i32(&mut buf);
+
+	let (_amt, _src) = match socket.recv_from(&mut buf) {
+		Ok(v) => v,
+		Err(e) => panic!("error : {}", e)
+	};
+	let y=BigEndian::read_i32(&mut buf);
+
+	(x, y)
+}
+
+fn send_pos(socket: &UdpSocket, x: i32, y: i32) {
+	let addr=SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(127u8, 0u8, 0u8, 1u8), 8080));
+
+
+	// Send a reply to the socket we received data from
+	let mut buf = [0; 8];
+
+	BigEndian::write_i32(&mut buf, x);
+	match socket.send_to(&buf, &addr){
+		Ok(v) => v,
+		Err(e) => panic!("error : {}", e)
+	};
+
+	BigEndian::write_i32(&mut buf, y);
+	match socket.send_to(&buf, &addr){
+		Ok(v) => v,
+		Err(e) => panic!("error : {}", e)
+	};
+
+
+
+}
+
+
+fn send_name(socket: &UdpSocket, name: &str) {
+	let addr=SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(127u8, 0u8, 0u8, 1u8), 8080));
+
+	match socket.send_to(&name.to_string().into_bytes(), &addr){
+		Ok(v) => v,
+		Err(e) => panic!("error : {}", e)
+	};
+}
+
+fn accept_name(socket: &UdpSocket) -> String{
+
+		let mut buf = [0; 64];
+
+		let (amt, _src) = match socket.recv_from(&mut buf) {
+			Ok(v) => v,
+			Err(e) => panic!("error : {}", e)
+		};
+		match std::str::from_utf8(&buf[..amt]){
+			Ok(v) => v.to_string(),
+			Err(_) => "".to_string()
+		}
+}
+
+pub fn render(rustbox: &RustBox, test_world: &World){
+	rendering::renderer_ascii::clear(&rustbox);
+	rendering::renderer_ascii::render_world(&rustbox, 0, 1, rustbox.width(), rustbox.height(), &test_world);
+
+}
+
+pub fn accept_input(rustbox: &RustBox) -> Option<Key>{
+	match rustbox.peek_event(Duration::milliseconds(10), false) {
+		Ok(rustbox::Event::KeyEvent(key)) => {
+			match key {
+				Some(Key::Char('q')) => Some(Key::Esc),
+				Some(Key::Esc) =>Some(Key::Esc),
+				Some(v) => Some(v),
+				_ => None
+			}
+		},
+		Err(e) => panic!("{}", e.description()),
+		_ => None
+	}
+}
+
+
+fn manage_avatar(avatar: &Rc<RefCell<Avatar>>, pressed_key: &Option<Key>){
+	match pressed_key{
+		&Some(Key::Up) => {avatar.borrow_mut().set_representation(Representation::new('^')); avatar.borrow_mut().move_up()},
+		&Some(Key::Down) => {avatar.borrow_mut().set_representation(Representation::new('v')); avatar.borrow_mut().move_down()},
+		&Some(Key::Left) => {avatar.borrow_mut().set_representation(Representation::new('<')); avatar.borrow_mut().move_left()},
+		&Some(Key::Right) => {avatar.borrow_mut().set_representation(Representation::new('>')); avatar.borrow_mut().move_right()},
+		&Some(_) => (),
+		&None =>()
+	};
+}
+
+
+
+fn game_loop(rustbox: &RustBox, test_user: &mut User, test_world: &World, socket: &mut UdpSocket, server: bool){
+
 
 	loop {
-		rendering::renderer_ascii::clear(&rustbox);
-		rustbox.print(0, 0, rustbox::RB_BOLD, Color::White, Color::Black, test_user.get_name());
-		rendering::renderer_ascii::render_world(&rustbox, 0, 1, rustbox.width(), rustbox.height(), &test_world);
-		let pressed_key = match rustbox.peek_event(Duration::milliseconds(100), false) {
-			Ok(rustbox::Event::KeyEvent(key)) => {
-				match key {
-					Some(Key::Char('q')) => { break; },
-					Some(Key::Esc) =>{break;},
-					Some(v) => Some(v),
-					_ => {None}
-				}
-			},
-			Err(e) => panic!("{}", e.description()),
-			_ => {None}
-		};
+		render(&rustbox, &test_world);
+		if server {
+			rustbox.print(0, 0, rustbox::RB_BOLD, Color::White, Color::Black, "Server : ");
+			rustbox.print(11, 0, rustbox::RB_BOLD, Color::White, Color::Black, test_user.get_name());
+			rustbox.present();
+
+		}else {
+			rustbox.print(0, 0, rustbox::RB_BOLD, Color::White, Color::Black, "Client : ");
+			rustbox.print(11, 0, rustbox::RB_BOLD, Color::White, Color::Black, test_user.get_name());
+			rustbox.present();
+
+			let pressed_key = accept_input(&rustbox);
+			match test_user.get_avatar() {
+				Some(avatar) => manage_avatar(&avatar, &pressed_key),
+				None => ()
+			};
+		}
 
 		match test_user.get_avatar() {
-			Some(avatar) => {
-				//avatar.borrow_mut().set_representation('X');
-				match pressed_key{
-					Some(Key::Up) => {avatar.borrow_mut().set_representation(Representation::new('^')); avatar.borrow_mut().move_up()},
-					Some(Key::Down) => {avatar.borrow_mut().set_representation(Representation::new('v')); avatar.borrow_mut().move_down()},
-					Some(Key::Left) => {avatar.borrow_mut().set_representation(Representation::new('<')); avatar.borrow_mut().move_left()},
-					Some(Key::Right) => {avatar.borrow_mut().set_representation(Representation::new('>')); avatar.borrow_mut().move_right()},
-					Some(_) => (),
-					None =>()
-				}
-			},
+			Some(avatar) =>
+				if server {
+					let name = accept_name(&socket);
+					test_user.set_name(name.to_string());
+					let (x, y)=recieve_pos(&socket);
+					avatar.borrow_mut().set_x(x);
+					avatar.borrow_mut().set_y(y);
+				} else {
+					send_name(socket, &test_user.get_name());
+					send_pos(&socket, avatar.borrow().get_x(), avatar.borrow().get_y());
+				},
 			None => ()
 		};
 
 	}
 }
 
+
 fn main() {
+
 
 	let rustbox = match RustBox::init(Default::default()) {
 		Result::Ok(v) => v,
@@ -93,13 +212,25 @@ fn main() {
 	for _ in (0..rustbox.width()*2){
 		let x=(rng.gen::<u32>()%(rustbox.width() as u32)) as i32;
 		let y=(rng.gen::<u32>()%(rustbox.height() as u32)) as i32;
-		for _ in (0..1) {
-			world.add_object(Rc::new(RefCell::new(Tree::new(x+(rng.gen::<u32>()%6 as u32) as i32, y+(rng.gen::<u32>()%6 as u32) as i32, 0)) ));
-		}
+		world.add_object(Rc::new(RefCell::new(Tree::new(x, y, 0)) ));
 	}
 
-	game_loop(&rustbox, &mut user, &world);
+	let mut server=false;
+	let mut port=8081;
+	for argument in env::args() {
+	    if argument == "server"{
+			server=true;
+			port=8080;
+		}
+	}
+	let adress = Ipv4Addr::new(127, 0, 0, 1);
+	let mut socket = match UdpSocket::bind((adress, port)) {
+		Ok(v) => v,
+		Err(e) => panic!("error : {}", e)
+	};
+	game_loop(&rustbox, &mut user, &world, &mut socket, server);
 
+	drop(socket);
 
 
 
