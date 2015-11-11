@@ -1,6 +1,6 @@
 # Kryset
 Kryset is a small game that I'm writing to learn rust programming
-![screenshot](/images/rust_Kryset_7-11-2015_world.png)
+![screenshot](/images/rust_Kryset_11-11-2015_multiplayer.png)
 
 ## Build instruction
 It should work with rust 1.4

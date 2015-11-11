@@ -4,8 +4,8 @@
 - [ ] Define the Avatar type (Started)
 - [ ] Define the World type (Started)
 - [ ] Add some test elements (Started)
-- [ ] Add Element saving functions
-- [ ] Add Element loading functions
+- [X] Add Element saving functions
+- [X] Add Element loading functions
 
 ## Logic
 - [ ] Listen to key inputs (Started)
@@ -17,8 +17,11 @@
 - [x] Display the users avatar in the world
 - [X] Store representation in a spécific type
 - [X] Allow the display of composed representation
-- [ ] Add Representations saving functions
-- [ ] Add Representations loading functions
+- [X] Add Representations saving functions
+- [X] Add Representations loading functions
+- [ ] Keep an index of the Representations
+- [ ] Add a menu system
+
 
 ## Util
 - [x] Manage text input
@@ -31,3 +34,4 @@
 ## Networking
 - [ ] Add basic game hosting (Started)
 - [ ] Add basic game joining (Started)
+- [ ] Write+Implement a specification for server-client communication

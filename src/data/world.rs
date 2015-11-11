@@ -5,13 +5,13 @@ use rustbox::Color;
 use rendering::renderer_ascii::Representation;
 
 pub trait Element {
-	fn get_x(&self) -> i32;
-	fn get_y(&self) -> i32;
-	fn get_z(&self) -> i32;
+	fn get_x(&self) -> i64;
+	fn get_y(&self) -> i64;
+	fn get_z(&self) -> i64;
 
-	fn set_x(&mut self, x: i32);
-	fn set_y(&mut self, x: i32);
-	fn set_z(&mut self, x: i32);
+	fn set_x(&mut self, x: i64);
+	fn set_y(&mut self, x: i64);
+	fn set_z(&mut self, x: i64);
 
 	fn get_representation(&self) -> &Representation;
 	fn get_color(&self) -> Color;
@@ -22,40 +22,40 @@ pub struct World{
 }
 
 pub struct Tree {
-	x: i32,
-	y: i32,
-	z: i32,
+	x: i64,
+	y: i64,
+	z: i64,
 	representation: Representation
 }
 
 impl Tree {
-	pub fn new(x: i32, y: i32, z: i32) -> Tree{
+	pub fn new(x: i64, y: i64, z: i64) -> Tree{
 		//Tree{x: x, y: y, z: z, representation: Representation::new('T')}
 		Tree{x: x, y: y, z: z, representation: Representation::new_composed(vec![(2, 0, ','), (1, 1, '/'), (2, 1, 'X'), (3, 1, '\\'), (0, 2, '/'), (1, 2, 'X'), (2, 2, 'X'), (3, 2, 'X'), (4, 2, '\\'),(2, 3, 'I')])}
 	}
 
-	pub fn get_x(&self) -> i32{
+	pub fn get_x(&self) -> i64{
 		self.x
 	}
-	pub fn get_y(&self) -> i32{
+	pub fn get_y(&self) -> i64{
 		self.y
 	}
 
-	pub fn get_z(&self) -> i32{
+	pub fn get_z(&self) -> i64{
 		self.z
 	}
 
 
-	pub fn set_x(&mut self, x: i32){
+	pub fn set_x(&mut self, x: i64){
 		self.x = x;
 	}
 
-	pub fn set_y(&mut self, y: i32){
+	pub fn set_y(&mut self, y: i64){
 		self.y = y;
 
 	}
 
-	pub fn set_z(&mut self, z: i32){
+	pub fn set_z(&mut self, z: i64){
 		self.z = z;
 
 	}
@@ -70,27 +70,27 @@ impl Tree {
 }
 
 impl Element for Tree{
-	fn get_x(&self) -> i32{
+	fn get_x(&self) -> i64{
 		self.get_x()
 	}
-	fn get_y(&self) -> i32{
+	fn get_y(&self) -> i64{
 		self.get_y()
 	}
 
-	fn get_z(&self) -> i32{
+	fn get_z(&self) -> i64{
 		self.get_z()
 	}
 
 
-	fn set_x(&mut self, x: i32){
+	fn set_x(&mut self, x: i64){
 		self.set_x(x);
 	}
 
-	fn set_y(&mut self, y: i32){
+	fn set_y(&mut self, y: i64){
 		self.set_y(y);
 	}
 
-	fn set_z(&mut self, z: i32){
+	fn set_z(&mut self, z: i64){
 		self.set_z(z);
 	}
 

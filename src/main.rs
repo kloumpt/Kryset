@@ -2,6 +2,7 @@ extern crate rustbox;
 extern crate time;
 extern crate rand;
 extern crate byteorder;
+extern crate rustc_serialize;
 
 mod data;
 mod rendering;
@@ -34,81 +35,31 @@ use std::net::SocketAddr;
 use std::net::SocketAddrV4;
 use std::net::Ipv4Addr;
 use std::net::UdpSocket;
-
+/*
 use byteorder::ByteOrder;
 use byteorder::BigEndian;
-
+*/
 use std::env;
 
-fn recieve_pos(socket: &UdpSocket) -> (i32, i32){
+use rustc_serialize::json::{ToJson, Json};
 
 
-	let mut buf = [0; 8];
+fn _accept_string(socket: &UdpSocket) -> String{
+	let mut buf = [0; 1024];
 
-	let (_amt, _src) = match socket.recv_from(&mut buf) {
+	let (amt, _src) = match socket.recv_from(&mut buf) {
 		Ok(v) => v,
 		Err(e) => panic!("error : {}", e)
 	};
-	let x=BigEndian::read_i32(&mut buf);
-
-	let (_amt, _src) = match socket.recv_from(&mut buf) {
-		Ok(v) => v,
-		Err(e) => panic!("error : {}", e)
-	};
-	let y=BigEndian::read_i32(&mut buf);
-
-	(x, y)
+	match std::str::from_utf8(&buf[..amt]){
+		Ok(v) => v.to_string(),
+		Err(_) => "".to_string()
+	}
 }
 
-fn send_pos(socket: &UdpSocket, x: i32, y: i32) {
-	let addr=SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(127u8, 0u8, 0u8, 1u8), 8080));
-
-
-	// Send a reply to the socket we received data from
-	let mut buf = [0; 8];
-
-	BigEndian::write_i32(&mut buf, x);
-	match socket.send_to(&buf, &addr){
-		Ok(v) => v,
-		Err(e) => panic!("error : {}", e)
-	};
-
-	BigEndian::write_i32(&mut buf, y);
-	match socket.send_to(&buf, &addr){
-		Ok(v) => v,
-		Err(e) => panic!("error : {}", e)
-	};
-
-
-
-}
-
-
-fn send_name(socket: &UdpSocket, name: &str) {
-	let addr=SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(127u8, 0u8, 0u8, 1u8), 8080));
-
-	match socket.send_to(&name.to_string().into_bytes(), &addr){
-		Ok(v) => v,
-		Err(e) => panic!("error : {}", e)
-	};
-}
-
-fn accept_name(socket: &UdpSocket) -> String{
-
-		let mut buf = [0; 64];
-
-		let (amt, _src) = match socket.recv_from(&mut buf) {
-			Ok(v) => v,
-			Err(e) => panic!("error : {}", e)
-		};
-		match std::str::from_utf8(&buf[..amt]){
-			Ok(v) => v.to_string(),
-			Err(_) => "".to_string()
-		}
-}
 
 pub fn render(rustbox: &RustBox, test_world: &World){
-	rendering::renderer_ascii::clear(&rustbox);
+	rendering::renderer_ascii::clear(&rustbox, 0, 1, rustbox.width(), rustbox.height());
 	rendering::renderer_ascii::render_world(&rustbox, 0, 1, rustbox.width(), rustbox.height(), &test_world);
 
 }
@@ -141,23 +92,56 @@ fn manage_avatar(avatar: &Rc<RefCell<Avatar>>, pressed_key: &Option<Key>){
 }
 
 
+fn accept_user(socket: &UdpSocket) -> Option<User>{
+	let mut buf = [0; 1024];
+
+	let (amt, _src) = match socket.recv_from(&mut buf) {
+		Ok(v) => v,
+		Err(e) => panic!("error : {}", e)
+	};
+	match std::str::from_utf8(&buf[..amt]){
+		Ok(v) => match Json::from_str(v){
+			Ok(json_data)=>Some(User::from_json(&json_data)),
+			Err(_) => None
+		},
+		Err(_) => panic!("tchelk")
+	}
+}
+
+fn send_user(socket: &UdpSocket, user: &User) {
+	let addr=SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(127u8, 0u8, 0u8, 1u8), 8080));
+	let user_data=user.to_json();
+	match user_data.as_string(){
+		Some(data) =>
+			match socket.send_to(&data.to_string().into_bytes(), &addr){
+				Ok(_) => (),
+				Err(e) => panic!("error : {}", e)
+			},
+		None=> ()
+	};
+}
+
+
 
 fn game_loop(rustbox: &RustBox, test_user: &mut User, test_world: &World, socket: &mut UdpSocket, server: bool){
-
-
 	loop {
 		render(&rustbox, &test_world);
 		if server {
-			rustbox.print(0, 0, rustbox::RB_BOLD, Color::White, Color::Black, "Server : ");
-			rustbox.print(11, 0, rustbox::RB_BOLD, Color::White, Color::Black, test_user.get_name());
+			rustbox.print(0, 0, rustbox::RB_BOLD, Color::White, Color::Black, &format!("Server | Connected user : {}", test_user.get_name()));
 			rustbox.present();
 
 		}else {
-			rustbox.print(0, 0, rustbox::RB_BOLD, Color::White, Color::Black, "Client : ");
-			rustbox.print(11, 0, rustbox::RB_BOLD, Color::White, Color::Black, test_user.get_name());
+			match test_user.to_json(){
+				Json::String(data)=>rustbox.print(0, 0, rustbox::RB_BOLD, Color::White, Color::Black, &format!("Client | User data : {}", &data)),
+				_ => rustbox.print(0, 0, rustbox::RB_BOLD, Color::White, Color::Black, &format!("Client | User name : {}", test_user.get_name()))
+			};
 			rustbox.present();
 
 			let pressed_key = accept_input(&rustbox);
+			match &pressed_key{
+				&Some(Key::Esc) => return,
+				_ => ()
+			};
 			match test_user.get_avatar() {
 				Some(avatar) => manage_avatar(&avatar, &pressed_key),
 				None => ()
@@ -167,14 +151,22 @@ fn game_loop(rustbox: &RustBox, test_user: &mut User, test_world: &World, socket
 		match test_user.get_avatar() {
 			Some(avatar) =>
 				if server {
-					let name = accept_name(&socket);
-					test_user.set_name(name.to_string());
-					let (x, y)=recieve_pos(&socket);
-					avatar.borrow_mut().set_x(x);
-					avatar.borrow_mut().set_y(y);
+					match accept_user(&socket){
+						Some(user) => {
+							test_user.set_name(user.get_name().to_string());
+							match user.get_avatar(){
+								Some(foreign_avatar) =>{
+									avatar.borrow_mut().set_x(foreign_avatar.borrow().get_x());
+									avatar.borrow_mut().set_y(foreign_avatar.borrow().get_y());
+									avatar.borrow_mut().set_representation(Representation::new_from(foreign_avatar.borrow().get_representation()));
+								},
+								None => ()
+							}
+						},
+						None => ()
+					};
 				} else {
-					send_name(socket, &test_user.get_name());
-					send_pos(&socket, avatar.borrow().get_x(), avatar.borrow().get_y());
+					send_user(socket, &test_user);
 				},
 			None => ()
 		};
@@ -185,6 +177,14 @@ fn game_loop(rustbox: &RustBox, test_user: &mut User, test_world: &World, socket
 
 fn main() {
 
+	let mut server=false;
+	let mut port=8081;
+	for argument in env::args() {
+	    if argument == "server"{
+			server=true;
+			port=8080;
+		}
+	}
 
 	let rustbox = match RustBox::init(Default::default()) {
 		Result::Ok(v) => v,
@@ -192,10 +192,11 @@ fn main() {
 	};
 
 	let mut name: String = String::new();
-	rustbox.print(0, rustbox.height()-2, rustbox::RB_BOLD, Color::White, Color::Black, "Enter your name:");
-	rustbox.present();
-	io::read_into(0, rustbox.height()-1, &rustbox, &mut name);
-
+	if !server{
+		rustbox.print(0, rustbox.height()-2, rustbox::RB_BOLD, Color::White, Color::Black, "Enter your name:");
+		rustbox.present();
+		io::read_into(0, rustbox.height()-1, &rustbox, &mut name);
+	}
 
 	let mut world = World::new();
 
@@ -207,22 +208,16 @@ fn main() {
 		None => ()
 	}
 
+
+
 	let mut rng = rand::thread_rng();
 
 	for _ in (0..rustbox.width()*2){
-		let x=(rng.gen::<u32>()%(rustbox.width() as u32)) as i32;
-		let y=(rng.gen::<u32>()%(rustbox.height() as u32)) as i32;
+		let x=(rng.gen::<u64>()%(rustbox.width() as u64)) as i64;
+		let y=(rng.gen::<u64>()%(rustbox.height() as u64)) as i64;
 		world.add_object(Rc::new(RefCell::new(Tree::new(x, y, 0)) ));
 	}
 
-	let mut server=false;
-	let mut port=8081;
-	for argument in env::args() {
-	    if argument == "server"{
-			server=true;
-			port=8080;
-		}
-	}
 	let adress = Ipv4Addr::new(127, 0, 0, 1);
 	let mut socket = match UdpSocket::bind((adress, port)) {
 		Ok(v) => v,
